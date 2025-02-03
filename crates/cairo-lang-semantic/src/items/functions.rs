@@ -231,7 +231,8 @@ impl OptionFrom<ModuleItemId> for GenericFunctionId {
             | ModuleItemId::Enum(_)
             | ModuleItemId::TypeAlias(_)
             | ModuleItemId::ImplAlias(_)
-            | ModuleItemId::ExternType(_) => None,
+            | ModuleItemId::ExternType(_)
+            | ModuleItemId::MacroDeclaration(_) => None,
         }
     }
 }

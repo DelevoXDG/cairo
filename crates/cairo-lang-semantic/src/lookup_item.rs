@@ -90,6 +90,7 @@ impl HasResolverData for ModuleItemId {
             ModuleItemId::Enum(item) => item.resolver_data(db),
             ModuleItemId::TypeAlias(item) => item.resolver_data(db),
             ModuleItemId::Trait(item) => item.resolver_data(db),
+            ModuleItemId::MacroDeclaration(_) => todo!(),
         }
     }
 }

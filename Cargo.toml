@@ -85,7 +85,7 @@ ark-secp256r1 = "0.4.0"
 ark-std = "0.4.0"
 assert_matches = "1.5"
 bimap = "0.6.3"
-cairo-vm = { version = "1.0.1", features = ["mod_builtin"]}
+cairo-vm = { version = "1.0.1", features = ["mod_builtin"] }
 clap = { version = "4.5.4", features = ["derive"] }
 colored = "2.1.0"
 const-fnv1a-hash = "1.1.0"
@@ -118,6 +118,7 @@ proc-macro2 = "1.0.82"
 quote = "1.0.36"
 rand = "0.8.5"
 rayon = "1.10.0"
+regex = "1.11.1"
 rstest = "0.19.0"
 salsa = { package = "rust-analyzer-salsa", version = "0.17.0-pre.6" }
 schemars = { version = "0.8.19", features = ["preserve_order"] }

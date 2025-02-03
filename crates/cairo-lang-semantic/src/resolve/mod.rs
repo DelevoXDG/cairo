@@ -50,7 +50,7 @@ use crate::items::trt::{
     ConcreteTraitConstantLongId, ConcreteTraitGenericFunctionLongId, ConcreteTraitId,
     ConcreteTraitImplLongId, ConcreteTraitLongId, ConcreteTraitTypeId,
 };
-use crate::items::{TraitOrImplContext, visibility};
+use crate::items::{TraitOrImplContext, macro_declaration, visibility};
 use crate::substitution::{GenericSubstitution, SemanticRewriter, SubstitutionRewriter};
 use crate::types::{ImplTypeId, are_coupons_enabled, resolve_type};
 use crate::{
@@ -971,6 +971,9 @@ impl<'db> Resolver<'db> {
                 )?)
                 .intern(self.db),
             ),
+            ResolvedGenericItem::Macro(macro_declaration_id) => {
+                ResolvedConcreteItem::Macro(macro_declaration_id)
+            }
             ResolvedGenericItem::Variant(_) => panic!("Variant is not a module item."),
             ResolvedGenericItem::TraitFunction(_) => panic!("TraitFunction is not a module item."),
             ResolvedGenericItem::Variable(_) => panic!("Variable is not a module item."),

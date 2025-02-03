@@ -6,8 +6,8 @@ use cairo_lang_defs::ids::{
     ConstantId, EnumId, ExternFunctionId, ExternTypeId, FreeFunctionId, FunctionTitleId,
     FunctionWithBodyId, GenericParamId, GenericTypeId, ImplAliasId, ImplConstantDefId, ImplDefId,
     ImplFunctionId, ImplImplDefId, ImplItemId, ImplTypeDefId, LanguageElementId, LookupItemId,
-    ModuleId, ModuleItemId, ModuleTypeAliasId, StructId, TraitConstantId, TraitFunctionId, TraitId,
-    TraitImplId, TraitItemId, TraitTypeId, UseId, VariantId,
+    MacroDeclarationId, ModuleId, ModuleItemId, ModuleTypeAliasId, StructId, TraitConstantId,
+    TraitFunctionId, TraitId, TraitImplId, TraitItemId, TraitTypeId, UseId, VariantId,
 };
 use cairo_lang_diagnostics::{Diagnostics, DiagnosticsBuilder, Maybe};
 use cairo_lang_filesystem::db::{AsFilesGroupMut, FilesGroup};
@@ -29,6 +29,7 @@ use crate::items::generics::{GenericParam, GenericParamData, GenericParamsData};
 use crate::items::imp::{
     ImplId, ImplImplId, ImplLookupContext, ImplicitImplImplData, UninferredImpl,
 };
+use crate::items::macro_declaration::{self, MacroRuleData};
 use crate::items::module::{ModuleItemInfo, ModuleSemanticData};
 use crate::items::trt::{
     ConcreteTraitGenericFunctionId, ConcreteTraitId, TraitItemConstantData, TraitItemImplData,
@@ -1402,7 +1403,26 @@ pub trait SemanticGroup:
     /// etc...
     #[salsa::invoke(items::functions::concrete_function_signature)]
     fn concrete_function_signature(&self, function_id: FunctionId) -> Maybe<semantic::Signature>;
-
+    // Macro Declaration.
+    // =================
+    /// Returns the semantic diagnostics of a macro declaration.
+    #[salsa::invoke(items::macro_declaration::macro_declaration_diagnostics)]
+    fn macro_declaration_diagnostics(
+        &self,
+        macro_id: MacroDeclarationId,
+    ) -> Diagnostics<SemanticDiagnostic>;
+    /// Returns the resolver data of a macro declaration.
+    #[salsa::invoke(items::macro_declaration::macro_declaration_resolver_data)]
+    fn macro_declaration_resolver_data(
+        &self,
+        macro_id: MacroDeclarationId,
+    ) -> Maybe<Arc<ResolverData>>;
+    /// Returns the attributes of a macro declaration.
+    #[salsa::invoke(items::macro_declaration::macro_declaration_attributes)]
+    fn macro_declaration_attributes(&self, macro_id: MacroDeclarationId) -> Maybe<Vec<Attribute>>;
+    /// Returns the rules semantic data of a macro declaration.
+    #[salsa::invoke(items::macro_declaration::macro_declaration_rules)]
+    fn macro_declaration_rules(&self, macro_id: MacroDeclarationId) -> Maybe<Vec<MacroRuleData>>;
     // Generic type.
     // =============
     /// Returns the generic params of a generic type.
@@ -1668,6 +1688,9 @@ fn module_semantic_diagnostics(
             ModuleItemId::ImplAlias(type_alias) => {
                 diagnostics.extend(db.impl_alias_semantic_diagnostics(*type_alias));
             }
+            ModuleItemId::MacroDeclaration(macro_declaration) => {
+                diagnostics.extend(db.macro_declaration_diagnostics(*macro_declaration));
+            }
         }
     }
     add_unused_item_diagnostics(db, module_id, &data, &mut diagnostics);
@@ -1797,6 +1820,7 @@ pub fn get_resolver_data_options(
             ModuleItemId::ExternFunction(id) => {
                 vec![db.extern_function_declaration_resolver_data(id)]
             }
+            ModuleItemId::MacroDeclaration(id) => vec![db.macro_declaration_resolver_data(id)],
         },
         LookupItemId::TraitItem(id) => match id {
             cairo_lang_defs::ids::TraitItemId::Function(id) => {

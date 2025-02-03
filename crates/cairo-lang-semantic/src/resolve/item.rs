@@ -1,6 +1,6 @@
 use cairo_lang_defs::ids::{
-    ConstantId, GenericTypeId, ImplAliasId, ImplDefId, ModuleId, ModuleItemId, ModuleTypeAliasId,
-    TopLevelLanguageElementId, TraitFunctionId, TraitId, VarId,
+    ConstantId, GenericTypeId, ImplAliasId, ImplDefId, MacroDeclarationId, ModuleId, ModuleItemId,
+    ModuleTypeAliasId, TopLevelLanguageElementId, TraitFunctionId, TraitId, VarId,
 };
 use cairo_lang_diagnostics::Maybe;
 use cairo_lang_proc_macros::DebugWithDb;
@@ -32,6 +32,7 @@ pub enum ResolvedGenericItem {
     Trait(TraitId),
     Impl(ImplDefId),
     Variable(VarId),
+    Macro(MacroDeclarationId),
 }
 impl ResolvedGenericItem {
     /// Wraps a ModuleItem with the corresponding ResolveGenericItem.
@@ -62,6 +63,7 @@ impl ResolvedGenericItem {
             }
             ModuleItemId::Trait(id) => ResolvedGenericItem::Trait(id),
             ModuleItemId::Impl(id) => ResolvedGenericItem::Impl(id),
+            ModuleItemId::MacroDeclaration(id) => ResolvedGenericItem::Macro(id),
         })
     }
 
@@ -78,6 +80,7 @@ impl ResolvedGenericItem {
             ResolvedGenericItem::Variant(id) => id.id.full_path(defs_db),
             ResolvedGenericItem::Trait(id) => id.full_path(defs_db),
             ResolvedGenericItem::Impl(id) => id.full_path(defs_db),
+            ResolvedGenericItem::Macro(id) => id.full_path(defs_db),
             ResolvedGenericItem::Variable(_) => "".into(),
         }
     }
@@ -94,6 +97,7 @@ pub enum ResolvedConcreteItem {
     Variant(ConcreteVariant),
     Trait(ConcreteTraitId),
     Impl(ImplId),
+    Macro(MacroDeclarationId),
 }
 
 impl ResolvedConcreteItem {
@@ -135,6 +139,9 @@ impl ResolvedConcreteItem {
                 | ImplLongId::TraitImpl(_)
                 | ImplLongId::GeneratedImpl(_) => return None,
             },
+            ResolvedConcreteItem::Macro(macro_declaration_id) => {
+                ResolvedGenericItem::Macro(*macro_declaration_id)
+            }
         })
     }
 }
